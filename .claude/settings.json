@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(tar -xzf \"C:/Users/cayde/.claude/projects/c--Users-cayde-Desktop-AAhomepage/e5d8becd-bf2e-47f9-bd3c-1e420ae77b6a/tool-results/webfetch-1779307037433-qgdcy8.bin\" -C \"C:/Users/cayde/Desktop/AAhomepage/design-bundle/\")"
+    ]
+  }
+}

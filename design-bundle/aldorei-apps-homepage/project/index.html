@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aldorei Apps</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #080706;
+      --surface:  #100F0D;
+      --border:   #2A2620;
+      --parchment:#C9B882;
+      --gold:     #8B6F3A;
+      --dim:      #6A6055;
+      --text:     #E4DDD0;
+      --muted:    #9A8E80;
+      --font-display: 'Cinzel', serif;
+      --font-body:    'Crimson Pro', Georgia, serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 18px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* Noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.028;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--gold); }
+
+    /* ===== ORNAMENTAL DIVIDER ===== */
+    .ornament {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: var(--gold);
+      opacity: 0.6;
+    }
+    .ornament::before,
+    .ornament::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold));
+    }
+    .ornament::after {
+      background: linear-gradient(270deg, transparent, var(--gold));
+    }
+    .ornament svg { flex-shrink: 0; }
+
+    /* ===== CORNER FRAME ===== */
+    .corner-frame {
+      position: relative;
+    }
+    .corner-frame::before,
+    .corner-frame::after,
+    .corner-frame .cf-b::before,
+    .corner-frame .cf-b::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-color: var(--parchment);
+      border-style: solid;
+      opacity: 0.35;
+    }
+    .corner-frame::before  { top: 0; left: 0;  border-width: 1px 0 0 1px; }
+    .corner-frame::after   { top: 0; right: 0; border-width: 1px 1px 0 0; }
+    .corner-frame .cf-b::before { bottom: 0; left: 0;  border-width: 0 0 1px 1px; }
+    .corner-frame .cf-b::after  { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
+
+    /* ===== NAV ===== */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 48px;
+      background: linear-gradient(180deg, rgba(8,7,6,0.95) 0%, transparent 100%);
+      backdrop-filter: blur(2px);
+    }
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 15px;
+      letter-spacing: 0.25em;
+      color: var(--parchment);
+      text-decoration: none;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-logo-mark {
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--gold);
+      transform: rotate(45deg);
+    }
+    .nav-logo-mark span { transform: rotate(-45deg); display: block; }
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: var(--font-display);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--parchment); }
+
+    /* ===== HERO ===== */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      padding: 120px 48px 80px;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 30%, rgba(139,111,58,0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(201,184,130,0.04) 0%, transparent 60%);
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      opacity: 0.8;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(52px, 8vw, 110px);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-align: center;
+      line-height: 1;
+      color: var(--text);
+      text-shadow: 0 0 80px rgba(201,184,130,0.15);
+      margin-bottom: 8px;
+    }
+
+    .hero-subtitle {
+      font-family: var(--font-body);
+      font-style: italic;
+      font-size: 20px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      margin-bottom: 60px;
+      text-align: center;
+    }
+
+    /* ===== HERO PROJECT PREVIEW ===== */
+    .hero-preview {
+      width: 100%;
+      max-width: 860px;
+      position: relative;
+    }
+
+    .project-switcher {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 28px;
+    }
+
+    .switcher-dot {
+      width: 6px;
+      height: 6px;
+      border: 1px solid var(--gold);
+      transform: rotate(45deg);
+      cursor: pointer;
+      transition: background 0.3s;
+      background: transparent;
+    }
+    .switcher-dot.active { background: var(--gold); }
+
+    .featured-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 48px;
+      cursor: pointer;
+      transition: border-color 0.4s;
+      overflow: hidden;
+    }
+    .featured-card:hover { border-color: var(--gold); }
+
+    .featured-card-bg {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 70% at 80% 50%, rgba(139,111,58,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .featured-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .featured-tag::before {
+      content: '◆';
+      font-size: 7px;
+    }
+
+    .featured-title {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 600;
+      color: var(--parchment);
+      margin-bottom: 14px;
+      letter-spacing: 0.05em;
+    }
+
+    .featured-desc {
+      font-size: 17px;
+      color: var(--muted);
+      font-style: italic;
+      max-width: 520px;
+      margin-bottom: 32px;
+      line-height: 1.65;
+    }
+
+    .featured-actions {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .btn-primary {
+      font-family: var(--font-display);
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: var(--parchment);
+      padding: 13px 28px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      display: inline-block;
+    }
+    .btn-primary:hover { background: #E8D9AC; transform: translateY(-1px); }
+
+    .btn-ghost {
+      font-family: var(--font-display);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: none;
+      border: 1px solid var(--border);
+      padding: 12px 24px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.3s, color 0.3s;
+      display: inline-block;
+    }
+    .btn-ghost:hover { border-color: var(--parchment); color: var(--parchment); }
+
+    .featured-nav-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: border-color 0.3s, color 0.3s;
+    }
+    .featured-nav-arrow:hover { border-color: var(--gold); color: var(--parchment); }
+    .featured-nav-arrow.prev { left: -56px; }
+    .featured-nav-arrow.next { right: -56px; }
+
+    .featured-index {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--dim);
+      position: absolute;
+      bottom: 48px;
+      right: 48px;
+      letter-spacing: 0.15em;
+    }
+
+    .fade-enter { animation: fadeSlide 0.5s ease forwards; }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== SCROLL HINT ===== */
+    .scroll-hint {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--dim);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      animation: breathe 3s ease-in-out infinite;
+    }
+    .scroll-hint-line {
+      width: 1px;
+      height: 36px;
+      background: linear-gradient(180deg, var(--gold) 0%, transparent 100%);
+    }
+    @keyframes breathe {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.9; }
+    }
+
+    /* ===== SECTION COMMON ===== */
+    section {
+      padding: 100px 48px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .section-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.35em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(26px, 3vw, 38px);
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: 0.08em;
+      margin-bottom: 20px;
+    }
+
+    .section-rule {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--gold);
+      opacity: 0.5;
+      width: 200px;
+    }
+    .section-rule::before, .section-rule::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--gold);
+    }
+    .section-rule-diamond {
+      width: 6px;
+      height: 6px;
+      background: var(--gold);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+
+    /* ===== PROJECTS GRID ===== */
+    #projects { padding-top: 0; }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+
+    .project-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 36px 32px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color 0.4s;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .project-card:hover { border-color: rgba(201,184,130,0.35); }
+
+    .project-card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 30%, rgba(8,7,6,0.85) 100%);
+      pointer-events: none;
+    }
+
+    .project-card-bg {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      background: radial-gradient(ellipse at 50% 50%, rgba(139,111,58,0.1) 0%, transparent 70%);
+      transition: opacity 0.5s;
+    }
+    .project-card:hover .project-card-bg { opacity: 1; }
+
+    .project-card-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .project-card-tag {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      opacity: 0.8;
+    }
+
+    .project-card-name {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--parchment);
+      letter-spacing: 0.06em;
+      margin-bottom: 10px;
+    }
+
+    .project-card-desc {
+      font-size: 15px;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.5;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease, opacity 0.4s;
+      opacity: 0;
+    }
+    .project-card:hover .project-card-desc {
+      max-height: 100px;
+      opacity: 1;
+    }
+
+    .project-card-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-display);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      text-transform: uppercase;
+      text-decoration: none;
+      margin-top: 16px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.4s 0.1s, transform 0.4s 0.1s;
+    }
+    .project-card:hover .project-card-cta {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .project-card-cta::after {
+      content: '→';
+      transition: transform 0.3s;
+    }
+    .project-card:hover .project-card-cta::after { transform: translateX(4px); }
+
+    .project-card.featured-large {
+      grid-column: span 2;
+      min-height: 340px;
+    }
+
+    /* Placeholder art area */
+    .project-art {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--border);
+      text-transform: uppercase;
+    }
+    .project-art-pattern {
+      position: absolute;
+      inset: 0;
+      opacity: 0.04;
+    }
+
+    /* ===== PATREON SECTION ===== */
+    #patreon {
+      padding: 0 48px 100px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .patreon-inner {
+      border: 1px solid var(--border);
+      position: relative;
+      padding: 64px 80px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 64px;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .patreon-bg {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 90% 50%, rgba(139,111,58,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .patreon-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      opacity: 0.8;
+    }
+
+    .patreon-title {
+      font-family: var(--font-display);
+      font-size: clamp(24px, 2.5vw, 34px);
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: 0.06em;
+      margin-bottom: 16px;
+      line-height: 1.3;
+    }
+
+    .patreon-desc {
+      font-size: 17px;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.7;
+      max-width: 480px;
+    }
+
+    .patreon-cta-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    .patreon-tiers {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 200px;
+      margin-bottom: 8px;
+    }
+
+    .patreon-tier {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      font-family: var(--font-display);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .patreon-tier.highlight {
+      border-color: var(--gold);
+      color: var(--parchment);
+    }
+
+    .patreon-tier-price {
+      color: var(--gold);
+    }
+
+    .btn-patreon {
+      font-family: var(--font-display);
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: var(--gold);
+      padding: 14px 32px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+      width: 200px;
+      text-align: center;
+      display: block;
+    }
+    .btn-patreon:hover { background: var(--parchment); }
+
+    /* ===== PATREON POSTS CAROUSEL ===== */
+    .posts-carousel {
+      margin-top: 64px;
+      position: relative;
+    }
+    .posts-track-wrap {
+      overflow: hidden;
+      cursor: grab;
+      user-select: none;
+    }
+    .posts-track-wrap:active { cursor: grabbing; }
+    .posts-track {
+      display: flex;
+      gap: 16px;
+      transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      will-change: transform;
+    }
+    .post-card {
+      flex-shrink: 0;
+      width: calc(33.333% - 11px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 28px 28px 24px;
+      transition: border-color 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    @media (max-width: 900px) {
+      .post-card { width: calc(85% - 8px); }
+    }
+    .post-card:hover { border-color: rgba(201,184,130,0.3); }
+    .post-card-tier {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      opacity: 0.7;
+    }
+    .post-card-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--parchment);
+      letter-spacing: 0.04em;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+    .post-card-excerpt {
+      font-size: 14px;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .post-card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .post-card-date {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      color: var(--dim);
+    }
+    .post-card-link {
+      font-family: var(--font-display);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      text-decoration: none;
+      text-transform: uppercase;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .post-card:hover .post-card-link { opacity: 1; }
+    .posts-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .posts-nav {
+      display: flex;
+      gap: 8px;
+    }
+    .posts-nav-btn {
+      width: 36px;
+      height: 36px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: border-color 0.3s, color 0.3s;
+    }
+    .posts-nav-btn:hover { border-color: var(--gold); color: var(--parchment); }
+    .posts-nav-btn:disabled { opacity: 0.3; cursor: default; }
+    .posts-progress {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .posts-pip {
+      width: 4px;
+      height: 4px;
+      background: var(--border);
+      transform: rotate(45deg);
+      transition: background 0.3s;
+      cursor: pointer;
+    }
+    .posts-pip.active { background: var(--gold); }
+
+    /* ===== ABOUT STRIP ===== */
+    #about {
+      padding: 0 48px 100px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .about-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+      border-top: 1px solid var(--border);
+      padding-top: 80px;
+    }
+
+    .about-left .label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      opacity: 0.8;
+    }
+
+    .about-left h2 {
+      font-family: var(--font-display);
+      font-size: clamp(24px, 2.5vw, 32px);
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: 0.06em;
+      line-height: 1.35;
+    }
+
+    .about-right p {
+      font-size: 17px;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.75;
+      margin-bottom: 20px;
+    }
+
+    .about-right p strong {
+      color: var(--text);
+      font-style: normal;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 48px;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 13px;
+      letter-spacing: 0.25em;
+      color: var(--dim);
+      text-transform: uppercase;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+    .footer-links a {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--dim);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .footer-links a:hover { color: var(--parchment); }
+
+    .footer-copy {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--dim);
+      letter-spacing: 0.1em;
+    }
+
+    /* ===== ANIMATE ON SCROLL ===== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    @media (max-width: 900px) {
+      nav { padding: 16px 24px; }
+      .nav-links { display: none; }
+      section, #patreon, #about { padding-left: 24px; padding-right: 24px; }
+      .projects-grid { grid-template-columns: 1fr; }
+      .project-card.featured-large { grid-column: span 1; }
+      .patreon-inner { grid-template-columns: 1fr; padding: 40px 32px; }
+      .about-inner { grid-template-columns: 1fr; gap: 32px; }
+      .featured-nav-arrow.prev { left: -20px; }
+      .featured-nav-arrow.next { right: -20px; }
+      footer { flex-direction: column; gap: 20px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero" class="nav-logo">
+    <div class="nav-logo-mark"><span>A</span></div>
+    Aldorei Apps
+  </a>
+  <ul class="nav-links">
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#patreon">Patreon</a></li>
+    <li><a href="#about">About</a></li>
+  </ul>
+</nav>
+
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const PROJECTS = [
+  {
+    id: 1,
+    tag: "Character Generation",
+    name: "NPC-Net",
+    subtitle: "The Oracle of Faces & Fates",
+    desc: "A living web of procedurally woven non-player characters — names, voices, motivations, secrets. Drop a party into any city and have a world breathe back.",
+    cta: "Generate Characters",
+    url: "https://npc-net.vercel.app/",
+    status: "Live",
+    color: "rgba(139,111,58,0.08)",
+  },
+  {
+    id: 2,
+    tag: "Ambient Audio",
+    name: "ConductorSBN",
+    subtitle: "The Maestro at Your Table",
+    desc: "Dynamic music mixing tailored to the table. Layer ambience, tension, and triumph — all triggered by the rhythm of the session, never interrupting the story.",
+    cta: "Open Mixer",
+    url: "#",
+    status: "Live",
+    color: "rgba(58,80,139,0.08)",
+  },
+  {
+    id: 3,
+    tag: "Coming Soon",
+    name: "Forthcoming",
+    subtitle: "A new relic stirs...",
+    desc: "Something is being forged in the workshop. Patrons receive early access and a voice in its shaping.",
+    cta: "Join the Waitlist",
+    url: "#patreon",
+    status: "In Development",
+    color: "rgba(80,58,139,0.06)",
+  },
+  {
+    id: 4,
+    tag: "Coming Soon",
+    name: "Forthcoming",
+    subtitle: "The archives grow...",
+    desc: "Two more tools are in design — born from table feedback and playtester wishes.",
+    cta: "Stay Informed",
+    url: "#patreon",
+    status: "Planned",
+    color: "rgba(58,139,80,0.05)",
+  },
+  {
+    id: 5,
+    tag: "Coming Soon",
+    name: "Forthcoming",
+    subtitle: "The forge never cools.",
+    desc: "Every campaign session reveals what needs to exist. This one emerged from a session that demanded it.",
+    cta: "Follow Progress",
+    url: "#patreon",
+    status: "Planned",
+    color: "rgba(139,58,58,0.05)",
+  },
+];
+
+const TWEAKS_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accentColor": "#C9B882",
+  "bgDarkness": "default",
+  "cardStyle": "angular",
+  "heroTitle": "Aldorei Apps",
+  "heroSubtitle": "Bespoke tools for the DnD table",
+  "autoAdvance": true
+}/*EDITMODE-END*/;
+
+// ─── ORNAMENTAL SVG ───────────────────────────────────────────────────────────
+function DiamondDivider() {
+  return (
+    <div style={{ display:'flex', alignItems:'center', gap:'14px', marginBottom:'0', opacity:0.45, color:'var(--gold)' }}>
+      <div style={{ flex:1, height:'1px', background:'linear-gradient(90deg,transparent,var(--gold))' }} />
+      <svg width="14" height="14" viewBox="0 0 14 14">
+        <rect x="3" y="3" width="8" height="8" transform="rotate(45 7 7)" fill="none" stroke="currentColor" strokeWidth="1" />
+        <rect x="5.5" y="5.5" width="3" height="3" transform="rotate(45 7 7)" fill="currentColor" />
+      </svg>
+      <div style={{ flex:1, height:'1px', background:'linear-gradient(270deg,transparent,var(--gold))' }} />
+    </div>
+  );
+}
+
+function CornerBorder({ children, style }) {
+  const cs = { position:'absolute', width:'16px', height:'16px', borderColor:'var(--parchment)', borderStyle:'solid', opacity:0.3 };
+  return (
+    <div style={{ position:'relative', ...style }}>
+      <div style={{ ...cs, top:0, left:0, borderWidth:'1px 0 0 1px' }} />
+      <div style={{ ...cs, top:0, right:0, borderWidth:'1px 1px 0 0' }} />
+      <div style={{ ...cs, bottom:0, left:0, borderWidth:'0 0 1px 1px' }} />
+      <div style={{ ...cs, bottom:0, right:0, borderWidth:'0 1px 1px 0' }} />
+      {children}
+    </div>
+  );
+}
+
+// ─── HERO FEATURED CARD ───────────────────────────────────────────────────────
+function HeroSection({ tweaks }) {
+  const [active, setActive] = useState(0);
+  const [animKey, setAnimKey] = useState(0);
+  const timerRef = useRef(null);
+
+  const go = useCallback((idx) => {
+    setActive(idx);
+    setAnimKey(k => k + 1);
+  }, []);
+
+  const prev = () => go((active - 1 + PROJECTS.length) % PROJECTS.length);
+  const next = () => go((active + 1) % PROJECTS.length);
+
+  useEffect(() => {
+    if (!tweaks.autoAdvance) return;
+    timerRef.current = setInterval(() => {
+      setActive(a => (a + 1) % PROJECTS.length);
+      setAnimKey(k => k + 1);
+    }, 5000);
+    return () => clearInterval(timerRef.current);
+  }, [tweaks.autoAdvance]);
+
+  const p = PROJECTS[active];
+
+  return (
+    <section id="hero" style={{ maxWidth:'100%', padding:'0' }}>
+      <div className="hero-bg" />
+
+      <div style={{ display:'flex', flexDirection:'column', alignItems:'center', padding:'140px 48px 80px', position:'relative', zIndex:1 }}>
+        <p className="hero-eyebrow">Interactive DnD Toolcraft</p>
+
+        <h1 className="hero-title">{tweaks.heroTitle}</h1>
+        <p className="hero-subtitle">{tweaks.heroSubtitle}</p>
+
+        {/* Project switcher dots */}
+        <div className="project-switcher">
+          {PROJECTS.map((_, i) => (
+            <div
+              key={i}
+              className={`switcher-dot${active === i ? ' active' : ''}`}
+              onClick={() => go(i)}
+            />
+          ))}
+        </div>
+
+        {/* Featured card */}
+        <div className="hero-preview" style={{ position:'relative' }}>
+          <button className="featured-nav-arrow prev" onClick={prev} aria-label="Previous">‹</button>
+          <button className="featured-nav-arrow next" onClick={next} aria-label="Next">›</button>
+
+          <CornerBorder style={{ padding:'0' }}>
+            <div className="featured-card" key={animKey} style={{ animation:'fadeSlide 0.5s ease forwards' }}>
+              <div className="featured-card-bg" style={{ background: `radial-gradient(ellipse 70% 70% at 80% 50%, ${p.color.replace('0.08','0.18')} 0%, transparent 70%)` }} />
+              
+              {/* Subtle art placeholder */}
+              <div style={{
+                position:'absolute', top:0, right:0, bottom:0, width:'40%',
+                background:`linear-gradient(90deg, transparent, ${p.color})`,
+                pointerEvents:'none'
+              }} />
+
+              <div style={{ position:'relative', zIndex:2 }}>
+                <div className="featured-tag">{p.tag}</div>
+                <h2 className="featured-title">{p.name}</h2>
+                <p style={{ fontFamily:'var(--font-display)', fontSize:'13px', letterSpacing:'0.15em', color:'var(--dim)', marginBottom:'12px', textTransform:'uppercase' }}>{p.subtitle}</p>
+                <p className="featured-desc">{p.desc}</p>
+                <div className="featured-actions">
+                  <a href={p.url} className="btn-primary">{p.cta}</a>
+                  <span style={{ fontFamily:'var(--font-mono)', fontSize:'10px', color:'var(--dim)', letterSpacing:'0.2em', textTransform:'uppercase' }}>{p.status}</span>
+                </div>
+              </div>
+
+              <span className="featured-index">{String(active + 1).padStart(2,'0')} / {String(PROJECTS.length).padStart(2,'0')}</span>
+            </div>
+          </CornerBorder>
+        </div>
+      </div>
+
+      <div className="scroll-hint">
+        <div className="scroll-hint-line" />
+        <span>Scroll</span>
+      </div>
+    </section>
+  );
+}
+
+// ─── PROJECTS GRID ────────────────────────────────────────────────────────────
+function ProjectsSection() {
+  return (
+    <section id="projects">
+      <div className="section-header reveal">
+        <p className="section-eyebrow">The Workshop</p>
+        <h2 className="section-title">Projects & Tools</h2>
+        <div className="section-rule"><div className="section-rule-diamond" /></div>
+      </div>
+
+      <div className="projects-grid reveal reveal-delay-1">
+        {PROJECTS.map((p, i) => (
+          <div
+            key={p.id}
+            className={`project-card${i === 0 ? ' featured-large' : ''}`}
+          >
+            {/* Placeholder art area */}
+            <div className="project-art">
+              <svg className="project-art-pattern" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+                <defs>
+                  <pattern id={`grid${p.id}`} width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="var(--parchment)" strokeWidth="0.5"/>
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill={`url(#grid${p.id})`} />
+                {i === 0 && <>
+                  <circle cx="200" cy="150" r="80" fill="none" stroke="var(--parchment)" strokeWidth="0.5" />
+                  <circle cx="200" cy="150" r="50" fill="none" stroke="var(--parchment)" strokeWidth="0.5" />
+                  <line x1="120" y1="150" x2="280" y2="150" stroke="var(--parchment)" strokeWidth="0.5" />
+                  <line x1="200" y1="70" x2="200" y2="230" stroke="var(--parchment)" strokeWidth="0.5" />
+                </>}
+                {i === 1 && <>
+                  <rect x="100" y="80" width="200" height="140" fill="none" stroke="var(--parchment)" strokeWidth="0.5" />
+                  <path d="M100 150 Q200 100 300 150" fill="none" stroke="var(--parchment)" strokeWidth="0.5" />
+                  <path d="M100 150 Q200 200 300 150" fill="none" stroke="var(--parchment)" strokeWidth="0.5" />
+                </>}
+              </svg>
+              {/* "Drop art here" indicator — hidden in final */}
+              <span style={{ position:'absolute', fontSize:'9px', letterSpacing:'0.2em', opacity:0.15 }}>Art Placeholder</span>
+            </div>
+
+            <div className="project-card-overlay" />
+            <div className="project-card-bg" />
+            <div className="project-card-content">
+              <p className="project-card-tag">{p.tag}</p>
+              <h3 className="project-card-name">{p.name}</h3>
+              <p className="project-card-desc">{p.subtitle}</p>
+              <a href={p.url} className="project-card-cta">{p.cta}</a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─── PATREON POSTS DATA (edit these manually with your latest posts) ──────────
+const PATREON_POSTS = [
+  {
+    tier: "Public",
+    title: "Introducing ConductorSBN — Music for the Table",
+    excerpt: "After months of playtesting across four different campaigns, the mixer is ready. Here's what it does, how it works, and why it took this long to get right.",
+    date: "Apr 2026",
+    url: "https://www.patreon.com/c/aldoreiapps",
+  },
+  {
+    tier: "Friend & Collaborator",
+    title: "NPC-Net v2: What's Changing and Why",
+    excerpt: "The name generator was always a placeholder. The new motivation engine goes somewhere deeper — I'll walk you through the design decisions behind it.",
+    date: "Mar 2026",
+    url: "https://www.patreon.com/c/aldoreiapps",
+  },
+  {
+    tier: "Collaborator",
+    title: "Workshop Notes: The Inventory Problem",
+    excerpt: "Every DM I know tracks inventory differently. I've been sketching a tool that stays out of the way. Early mockups and a question for patrons inside.",
+    date: "Mar 2026",
+    url: "https://www.patreon.com/c/aldoreiapps",
+  },
+  {
+    tier: "Public",
+    title: "Why I Build for DnD",
+    excerpt: "A short piece on what drew me to making tabletop software, and the philosophy that guides every tool I ship.",
+    date: "Feb 2026",
+    url: "https://www.patreon.com/c/aldoreiapps",
+  },
+  {
+    tier: "Friend & Collaborator",
+    title: "Playtesting Report: Session 12",
+    excerpt: "ConductorSBN in a live session — what worked, what broke, and one moment where the music cued perfectly without me touching anything.",
+    date: "Feb 2026",
+    url: "https://www.patreon.com/c/aldoreiapps",
+  },
+];
+
+// ─── POSTS CAROUSEL ───────────────────────────────────────────────────────────
+function PostsCarousel() {
+  const [offset, setOffset] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [dragStart, setDragStart] = useState(null);
+  const [dragDelta, setDragDelta] = useState(0);
+  const trackRef = useRef(null);
+
+  const visibleCount = () => window.innerWidth <= 900 ? 1 : 3;
+  const maxOffset = PATREON_POSTS.length - visibleCount();
+
+  const canPrev = offset > 0;
+  const canNext = offset < maxOffset;
+
+  const prev = () => setOffset(o => Math.max(0, o - 1));
+  const next = () => setOffset(o => Math.min(maxOffset, o + 1));
+
+  // Drag/swipe
+  const onPointerDown = (e) => {
+    setDragging(true);
+    setDragStart(e.clientX);
+    setDragDelta(0);
+    trackRef.current.setPointerCapture(e.pointerId);
+  };
+  const onPointerMove = (e) => {
+    if (!dragging) return;
+    setDragDelta(e.clientX - dragStart);
+  };
+  const onPointerUp = () => {
+    if (!dragging) return;
+    setDragging(false);
+    if (dragDelta < -60) next();
+    else if (dragDelta > 60) prev();
+    setDragDelta(0);
+    setDragStart(null);
+  };
+
+  const cardW = trackRef.current
+    ? trackRef.current.offsetWidth / visibleCount() + 16 / visibleCount()
+    : 0;
+
+  const translateX = -(offset * (cardW || 340)) + (dragging ? dragDelta : 0);
+
+  return (
+    <div className="posts-carousel reveal">
+      <div className="posts-controls">
+        <div>
+          <p className="section-eyebrow" style={{ marginBottom:0 }}>From the Workshop</p>
+        </div>
+        <div style={{ display:'flex', gap:'16px', alignItems:'center' }}>
+          <div className="posts-progress">
+            {PATREON_POSTS.map((_, i) => (
+              <div key={i} className={`posts-pip${i === offset ? ' active' : ''}`} onClick={() => setOffset(Math.min(i, maxOffset))} />
+            ))}
+          </div>
+          <div className="posts-nav">
+            <button className="posts-nav-btn" onClick={prev} disabled={!canPrev}>‹</button>
+            <button className="posts-nav-btn" onClick={next} disabled={!canNext}>›</button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="posts-track-wrap"
+        ref={trackRef}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      >
+        <div
+          className="posts-track"
+          style={{
+            transform: `translateX(${translateX}px)`,
+            transition: dragging ? 'none' : 'transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94)',
+          }}
+        >
+          {PATREON_POSTS.map((post, i) => (
+            <div key={i} className="post-card">
+              <p className="post-card-tier">{post.tier}</p>
+              <h4 className="post-card-title">{post.title}</h4>
+              <p className="post-card-excerpt">{post.excerpt}</p>
+              <div className="post-card-meta">
+                <span className="post-card-date">{post.date}</span>
+                <a href={post.url} className="post-card-link" target="_blank" rel="noopener">Read →</a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── PATREON SECTION ──────────────────────────────────────────────────────────
+function PatreonSection() {
+  return (
+    <div id="patreon" style={{ padding:'0 48px 100px', maxWidth:'1200px', margin:'0 auto' }}>
+      <div className="patreon-inner reveal">
+        <div className="patreon-bg" />
+        <div style={{ position:'relative', zIndex:1 }}>
+          <p className="patreon-eyebrow">Support the Workshop</p>
+          <h2 className="patreon-title">Shape the tools that shape your table</h2>
+          <DiamondDivider />
+          <p className="patreon-desc" style={{ marginTop:'20px' }}>
+            Patrons gain early access to new tools before they're released, vote on features, and receive
+            behind-the-scenes dispatches from the workshop — the design notes, the dead ends, and the discoveries.
+          </p>
+        </div>
+        <div className="patreon-cta-block" style={{ position:'relative', zIndex:1 }}>
+          <div className="patreon-tiers">
+            <div className="patreon-tier">
+              <span>Friend</span>
+              <span className="patreon-tier-price">$5 / mo</span>
+            </div>
+            <div className="patreon-tier highlight">
+              <span>Collaborator</span>
+              <span className="patreon-tier-price">$10 / mo</span>
+            </div>
+          </div>
+          <a href="https://www.patreon.com/c/aldoreiapps/membership" className="btn-patreon" target="_blank" rel="noopener">Join on Patreon</a>
+          <span style={{ fontFamily:'var(--font-mono)', fontSize:'9px', color:'var(--dim)', letterSpacing:'0.15em' }}>Cancel anytime</span>
+        </div>
+      </div>
+      <PostsCarousel />
+    </div>
+  );
+}
+
+// ─── ABOUT SECTION ────────────────────────────────────────────────────────────
+function AboutSection() {
+  return (
+    <div id="about">
+      <div className="about-inner">
+        <div className="about-left reveal">
+          <p className="label">The Maker</p>
+          <h2>DnD tools built from the table up — not the other way around.</h2>
+        </div>
+        <div className="about-right reveal reveal-delay-2">
+          <p>
+            <strong>Aldorei Apps</strong> is a solo workshop dedicated to building software for the tabletop RPG table.
+            Every tool begins as a problem felt mid-session — an absent resource, an awkward pause, a missing piece.
+          </p>
+          <p>
+            The goal isn't to replace the dungeon master's craft. It's to give them better instruments.
+            Quiet tools that do their job and disappear.
+          </p>
+          <div style={{ display:'flex', gap:'16px', marginTop:'28px' }}>
+            <a href="#projects" className="btn-ghost">Browse Projects</a>
+            <a href="#patreon" className="btn-ghost">Support the Work</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── FOOTER ───────────────────────────────────────────────────────────────────
+function Footer() {
+  return (
+    <footer>
+      <span className="footer-logo">Aldorei Apps</span>
+      <ul className="footer-links">
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#patreon">Patreon</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+      <span className="footer-copy">© 2026 Aldorei Apps</span>
+    </footer>
+  );
+}
+
+// ─── APP ──────────────────────────────────────────────────────────────────────
+function App() {
+  const [tweaks, setTweaks, TweaksPanel] = useTweaks(TWEAKS_DEFAULTS);
+
+  // Scroll reveal
+  useEffect(() => {
+    const els = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.12 });
+    els.forEach(el => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+
+  // Apply tweaks accent color
+  useEffect(() => {
+    document.documentElement.style.setProperty('--parchment', tweaks.accentColor);
+  }, [tweaks.accentColor]);
+
+  return (
+    <>
+      <HeroSection tweaks={tweaks} />
+      <ProjectsSection />
+      <PatreonSection />
+      <AboutSection />
+      <Footer />
+
+      {TweaksPanel && (
+        <TweaksPanel title="Tweaks">
+          <TweakSection label="Brand">
+            <TweakText    id="heroTitle"    label="Site Title"        value={tweaks.heroTitle}    onChange={v => setTweaks('heroTitle', v)} />
+            <TweakText    id="heroSubtitle" label="Tagline"           value={tweaks.heroSubtitle} onChange={v => setTweaks('heroSubtitle', v)} />
+            <TweakColor   id="accentColor"  label="Accent Color"      value={tweaks.accentColor}  onChange={v => setTweaks('accentColor', v)} />
+          </TweakSection>
+          <TweakSection label="Hero">
+            <TweakToggle  id="autoAdvance"  label="Auto-advance Hero" value={tweaks.autoAdvance}  onChange={v => setTweaks('autoAdvance', v)} />
+          </TweakSection>
+          <TweakSection label="Cards">
+            <TweakRadio   id="cardStyle"    label="Card Style"        value={tweaks.cardStyle}    onChange={v => setTweaks('cardStyle', v)}
+              options={[
+                { label:'Angular', value:'angular' },
+                { label:'Rounded', value:'rounded' },
+              ]}
+            />
+          </TweakSection>
+        </TweaksPanel>
+      )}
+    </>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
