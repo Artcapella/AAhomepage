@@ -1161,8 +1161,8 @@ const PROJECTS = [
     id: 1,
     tag: "Character Generation",
     name: "NPC-Net",
-    subtitle: "The Oracle of Faces & Fates",
-    desc: "A living web of procedurally woven non-player characters — names, voices, motivations, secrets. Drop a party into any city and have a world breathe back.",
+    subtitle: "The Ultimate NPC Generator",
+    desc: "A living web of procedurally woven non-player characters — names, voices, motivations, secrets. Tailored to how GMs run social encounters and with support for multiple settings including your homebrew!",
     cta: "Generate Characters",
     url: "https://npc-net.vercel.app/",
     status: "Live",
@@ -1528,6 +1528,22 @@ function HeroSection({ tweaks }) {
             <div className="featured-card" key={animKey} style={{ animation:'fadeSlide 0.5s ease forwards', backdropFilter:'blur(4px)', background:'rgba(16,15,13,0.85)' }}>
               <div className="featured-card-bg" style={{ background:`radial-gradient(ellipse 70% 70% at 80% 50%, ${p.color.replace('0.08','0.22')} 0%, transparent 70%)` }} />
               <div style={{ position:'absolute', top:0, right:0, bottom:0, width:'40%', background:`linear-gradient(90deg,transparent,${p.color})`, pointerEvents:'none' }} />
+              {p.id === 1 && (
+                <img
+                  src="assets/NPC_net_only.png"
+                  alt=""
+                  aria-hidden="true"
+                  style={{
+                    position:'absolute', right:'24px', top:'50%',
+                    transform:'translateY(-50%)',
+                    height:'75%', width:'auto', maxWidth:'38%',
+                    opacity:0.22,
+                    filter:'brightness(0.85) saturate(0.8)',
+                    pointerEvents:'none',
+                    zIndex:1,
+                  }}
+                />
+              )}
               <div style={{ position:'relative', zIndex:2 }}>
                 <div className="featured-tag">{p.tag}</div>
                 <h2 className="featured-title">{p.name}</h2>
@@ -1589,25 +1605,33 @@ function ProjectsSection() {
         {PROJECTS.map((p, i) => (
           <div key={p.id} className={`project-card${i === 0 ? ' featured-large' : ''}`}>
             <div className="project-art">
-              <svg className="project-art-pattern" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-                <defs>
-                  <pattern id={`grid${p.id}`} width="40" height="40" patternUnits="userSpaceOnUse">
-                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="var(--parchment)" strokeWidth="0.5"/>
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill={`url(#grid${p.id})`} />
-                {i === 0 && <>
-                  <circle cx="200" cy="150" r="80" fill="none" stroke="var(--parchment)" strokeWidth="0.5" />
-                  <circle cx="200" cy="150" r="50" fill="none" stroke="var(--parchment)" strokeWidth="0.5" />
-                  <line x1="120" y1="150" x2="280" y2="150" stroke="var(--parchment)" strokeWidth="0.5" />
-                  <line x1="200" y1="70" x2="200" y2="230" stroke="var(--parchment)" strokeWidth="0.5" />
-                </>}
-                {i === 1 && <>
-                  <rect x="100" y="80" width="200" height="140" fill="none" stroke="var(--parchment)" strokeWidth="0.5" />
-                  <path d="M100 150 Q200 100 300 150" fill="none" stroke="var(--parchment)" strokeWidth="0.5" />
-                  <path d="M100 150 Q200 200 300 150" fill="none" stroke="var(--parchment)" strokeWidth="0.5" />
-                </>}
-              </svg>
+              {i === 0 ? (
+                <img
+                  src="assets/NPC_net.png"
+                  alt=""
+                  aria-hidden="true"
+                  style={{
+                    position:'absolute', inset:0, width:'100%', height:'100%',
+                    objectFit:'cover', objectPosition:'top center',
+                    opacity:0.28,
+                    filter:'brightness(0.65) saturate(0.7)',
+                  }}
+                />
+              ) : (
+                <svg className="project-art-pattern" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+                  <defs>
+                    <pattern id={`grid${p.id}`} width="40" height="40" patternUnits="userSpaceOnUse">
+                      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="var(--parchment)" strokeWidth="0.5"/>
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill={`url(#grid${p.id})`} />
+                  {i === 1 && <>
+                    <rect x="100" y="80" width="200" height="140" fill="none" stroke="var(--parchment)" strokeWidth="0.5" />
+                    <path d="M100 150 Q200 100 300 150" fill="none" stroke="var(--parchment)" strokeWidth="0.5" />
+                    <path d="M100 150 Q200 200 300 150" fill="none" stroke="var(--parchment)" strokeWidth="0.5" />
+                  </>}
+                </svg>
+              )}
             </div>
             <div className="project-card-overlay" />
             <div className="project-card-bg" />
