@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aldorei Apps — Bespoke Tools for the DnD Table</title>
+  <title>Aldorei Apps — Bespoke Tools for the TTRPG Table</title>
   <meta name="description" content="Aldorei Apps builds bespoke software for the tabletop RPG table. Explore NPC-Net, ConductorSBN, and more — tools born from real sessions." />
   <meta name="theme-color" content="#080706" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Aldorei Apps" />
-  <meta property="og:description" content="Bespoke tools for the DnD table. NPC generation, session music mixing, and more." />
+  <meta property="og:description" content="Bespoke tools for the TTRPG table. NPC generation, session music mixing, and more." />
   <meta property="og:site_name" content="Aldorei Apps" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="Aldorei Apps" />
-  <meta name="twitter:description" content="Bespoke tools for the DnD table. NPC generation, session music mixing, and more." />
+  <meta name="twitter:description" content="Bespoke tools for the TTRPG table. NPC generation, session music mixing, and more." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
@@ -1219,7 +1219,7 @@ const TWEAKS_DEFAULTS = /*EDITMODE-BEGIN*/{
   "bgDarkness": "default",
   "cardStyle": "angular",
   "heroTitle": "Aldorei Apps",
-  "heroSubtitle": "Bespoke tools for the DnD table",
+  "heroSubtitle": "Bespoke tools for the TTRPG table",
   "autoAdvance": true
 }/*EDITMODE-END*/;
 
@@ -1499,7 +1499,7 @@ function HeroSection({ tweaks }) {
       <div style={{ position:'absolute', inset:0, background:'radial-gradient(ellipse 90% 80% at 50% 30%, transparent 40%, rgba(8,7,6,0.45) 100%)', pointerEvents:'none' }} />
 
       <div style={{ display:'flex', flexDirection:'column', alignItems:'center', padding:'140px 48px 80px', position:'relative', zIndex:1 }}>
-        <p className="hero-eyebrow" style={{ textShadow: hoveredNode >= 0 ? '0 0 20px rgba(201,184,130,0.6)' : 'none', transition:'text-shadow 0.4s' }}>Interactive DnD Toolcraft</p>
+        <p className="hero-eyebrow" style={{ textShadow: hoveredNode >= 0 ? '0 0 20px rgba(201,184,130,0.6)' : 'none', transition:'text-shadow 0.4s' }}>Interactive TTRPG Toolcraft</p>
         <h1 className="hero-title" style={{
           textShadow: hoveredNode >= 0
             ? '0 0 60px rgba(201,184,130,0.5), 0 0 120px rgba(201,184,130,0.2)'
@@ -1542,6 +1542,11 @@ function HeroSection({ tweaks }) {
                     zIndex:1,
                   }}
                 />
+              )}
+              {p.id === 2 && (
+                <div style={{ position:'absolute', inset:0, pointerEvents:'none', zIndex:1 }}>
+                  <ConductorArt />
+                </div>
               )}
               <div style={{ position:'relative', zIndex:2 }}>
                 <div className="featured-tag">{p.tag}</div>
@@ -1682,11 +1687,11 @@ function ProjectsSection() {
 
 // ─── CHRONICLE / CHANGELOG ────────────────────────────────────────────────────
 const CHANGELOG = [
-  { date: 'Apr 2026', version: 'v1.0',  type: 'release', title: 'ConductorSBN Released',         desc: 'After four campaigns of playtesting, the session music mixer ships to the public.' },
-  { date: 'Mar 2026', version: 'v2.1',  type: 'update',  title: 'NPC-Net: Motivation Engine',      desc: 'Deep personality systems replace the original name generator architecture.' },
-  { date: 'Jan 2026', version: 'v2.0',  type: 'major',   title: 'NPC-Net Rewrite',                 desc: 'Rebuilt from the ground up. Faster, deeper, stranger.' },
-  { date: 'Nov 2025', version: 'v1.0',  type: 'release', title: 'NPC-Net Launched',                desc: 'The first Aldorei tool goes live — simple, fast NPC generation for any table.' },
-  { date: 'Sep 2025', version: '',      type: 'origin',  title: 'Aldorei Apps Founded',            desc: 'A solo project begins. One DM, one frustration, one blank page.' },
+  { date: 'May 2026', version: 'v1.3',  type: 'release', title: 'NPC-Net Beta Release',         desc: 'After leaving early playtesting, the beta is opened to public feedback.' },
+  { date: 'Jun 2026', version: 'v2.1',  type: 'release',  title: 'ConductorSBN Beta Release',      desc: 'A (buggy) vision of whats to come' },
+  { date: 'Jul 2026', version: 'v2.0',  type: 'major',   title: 'NPC-Net Launch',                 desc: 'Rebuilt from the ground up. Faster, deeper, stranger.' },
+  { date: 'Aug 2026', version: 'v3.0',  type: 'major', title: 'ConductorSBN Launch',                desc: 'The flagship project years in the making finally releases.' },
+  { date: 'Sep 2026', version: 'vX.X',  type: 'patron-only',  title: 'A Secret Project for Patrons',            desc: 'Time (and patrons) will tell what it ends up being' },
 ];
 
 function ChronicleSection() {
@@ -1703,8 +1708,8 @@ function ChronicleSection() {
   return (
     <section id="chronicle">
       <div className="section-header reveal">
-        <p className="section-eyebrow">History</p>
-        <h2 className="section-title">The Codex of Changes</h2>
+        <p className="section-eyebrow">Roadmap</p>
+        <h2 className="section-title">Visions of Whats to Come</h2>
         <div className="section-rule"><div className="section-rule-diamond" /></div>
       </div>
 
@@ -1765,7 +1770,7 @@ const PATREON_POSTS = [
   },
   {
     tier: "Public",
-    title: "Why I Build for DnD",
+    title: "Why I Build for TTRPG",
     excerpt: "A short piece on what drew me to making tabletop software, and the philosophy that guides every tool I ship.",
     date: "Feb 2026",
     url: "https://www.patreon.com/c/aldoreiapps",
@@ -1914,7 +1919,7 @@ function AboutSection() {
       <div className="about-inner">
         <div className="about-left reveal">
           <p className="label">The Maker</p>
-          <h2>DnD tools built from the table up — not the other way around.</h2>
+          <h2>TTRPG tools built from the table up — not the other way around.</h2>
         </div>
         <div className="about-right reveal reveal-delay-2">
           <p>
@@ -1923,7 +1928,7 @@ function AboutSection() {
           </p>
           <p>
             The goal isn't to replace the dungeon master's craft. It's to give them better instruments.
-            Quiet tools that do their job and disappear.
+            Quiet tools that do their job and disappear without the players even noticing.
           </p>
           <div style={{ display:'flex', gap:'16px', marginTop:'28px' }}>
             <a href="#projects" className="btn-ghost">Browse Projects</a>
